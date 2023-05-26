@@ -1,6 +1,6 @@
 # robocup2023-yolov8-pose-estimation
 
-**to moy:**
+**to kc chamanow:**
 
   train keras for yolov8 pose to det following
   
@@ -16,7 +16,7 @@ input : any frame with / without people
 
 output : [(bounding_box_person1, pose_index_person1), (bounding_box_person2, pose_index_person2), ...]
     
-    bounding_box = (topleft_x, topleft_y, width, height)
+bounding_box = (topleft_x, topleft_y, width, height)
 
 
 also add readme duay
