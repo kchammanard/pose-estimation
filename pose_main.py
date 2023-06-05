@@ -7,11 +7,21 @@ from ultralytics.yolo.utils.torch_utils import select_device
 import yaml
 from random import randint
 from ultralytics.SORT import *
+from tensorflow import keras
+import tensorflow as tf
+from keras.models import load_model
 
+yolo_model = YOLO("yolov8s-pose.pt")
 
-model = YOLO("yolov8s-pose.pt")
+model = load_model("model/pose_estimation.h5",compile= False)
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+              loss=tf.keras.losses.BinaryCrossentropy(),
+              metrics=[tf.keras.metrics.BinaryAccuracy(),
+                       tf.keras.metrics.FalseNegatives()])
 
 l=[]
+
+dic = {0: "Sitting", 1:"Standing", 2: "Sitting and Raising Hand", 3: "Standing and Raising Hand"}
 for c in range(10):
     try:
         ret, frame = cv2.VideoCapture(c).read()
@@ -23,7 +33,7 @@ for c in range(10):
 print(l)
 
 start = time.time()
-cap = cv2.VideoCapture(int(input("Cam index: ")))
+cap = cv2.VideoCapture(l[0])
 
 rand_color_list = np.random.rand(20, 3) * 255
 
@@ -40,9 +50,19 @@ while cap.isOpened():
     start = time.time()
     # frame2 = np.copy(frame)
 
-    results = model.predict(source=frame, conf=0.7, show=True)[0]
+    results = yolo_model.predict(source=frame, conf=0.7, show=True)[0]
   
-    print(res)
+    # print(results.boxes)
+    # print(results.keypoints)
+    # print(results.keypoints.shape)
+    if results.boxes:
+        flattened_data = results.keypoints.flatten()
+        reshaped_tensor = np.array(flattened_data).reshape(1, -1)
+        print(reshaped_tensor.shape)
+
+        p = model.predict(reshaped_tensor)
+        p_index = np.argmax(p, axis = 1)
+        print(dic[int(p_index)])
 
     # cv2.imshow("frame", frame2)
 
